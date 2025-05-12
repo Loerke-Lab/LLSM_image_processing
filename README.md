@@ -37,17 +37,31 @@
    [crop_obj] = InterpStep3_getCropObject(Vinterp)
    ```
 6. Run interpolation for all frames.
-   - Run the decurving for all time points. Inputs to the function are the the original file lists, the crop_obj and fitobject, as well as the time period (given in frames, i.e. [1:20]), the savepath and readpath. The readpath should be the original deskewed image source, and the savepath should be a new folder (i.e. Processed_Images).
+   - Run the decurving for all time points. Inputs to the function are the the original file lists, the crop_obj and fitobject, as well as the time vector (given in frames, i.e. [1:20]), the savepath and readpath. The readpath should be the original deskewed image source, and the savepath should be a new folder (i.e. Processed_Images).
    ```matlab
-   [NewImageListCh0,NewImageListCh1] = InterpStep4_2ChannelProcessAndWrite(ListCh0,ListCh1,crop_obj,fitobject,tvec,savepath,readpath)
+   [NewImageListCh0,NewImageListCh1] = InterpStep4_2ChannelProcessAndWrite(ListCh0,ListCh1,crop_obj,fitobject,[1:20],cd,data.Source)
    ```
 
 
 ## Alternative Process:
 
-1.  **Get temporal max projection:** Create a temporal maximum projection of the image data using the `InterpStep1_maxImage.m` script. This script generates a new image where each pixel's intensity represents the maximum intensity of that pixel across the entire time series.
-2.  **Manually get fitobject:** Determine the "fitobject" manually using the `InterpStep2_manualGetFitObject.m` script. This script provides a user interface for selecting points on the image, which are then used to fit a surface.
-3.  **Run interpolation for all frames:** Perform interpolation on all frames using the `InterpStep4_1ChannelProcessAndWrite.m` script. This script interpolates a single channel of the image data based on the manually defined fitobject, crops the result, and writes the processed image volumes to new TIFF files.
+1. Get temporal max projection.
+   - Create a temporal maximum projection of the image data, producing a new image where each pixel's intensity represents the maximum intensity of that pixel across the entire time series.
+   - This step is most likely unnecessary, as it seeems that the embryo does not move during imaging. However, if this changes, then a max projection might be useful.
+   - The function inputs are the original membrane file list and the time vector (given in frames, i.e. [1:20]).
+   ```matlab
+   [V] = InterpStep1_maxImage(ListCh0,[1:20])
+   ```
+2. Manually get fitobject.
+   - Run the manual fit finding function, which provides a user interface for selecting points on the image, which are then used to fit a surface.
+   ```matlab
+   [fitobject,Verts,X,Y,Z,Vinterp] = InterpStep2_manualGetFitObject(V,[])
+   ```
+3. Run interpolation for all frames.
+   - Run the decurving for all time points. Inputs to the function are the the original file list, the crop_obj and fitobject, as well as the savepath. The savepath should be a new folder (i.e. Processed_Images).
+   ```matlab
+   [NewImageListCh0] = InterpStep4_1ChannelProcessAndWrite(ListCh0,crop_obj,fitobject,cd)
+   ```
 
 
 
