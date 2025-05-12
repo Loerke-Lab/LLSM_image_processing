@@ -1,3 +1,5 @@
+# LLSM-image-processing
+
 ## Light Sheet Decurving Flowchart
 ![](Lightsheet_code_flowchart.png)
 
@@ -12,7 +14,6 @@
 2. Store list and other data in a structure.
     - Important data to save would be at a minimum the ImageFileList, Source, SecPerFrame. Other data can include start and end of GBE, pixel size in microns, processed movies, etc.
     - Save the data structure in the Source folder.
-
     ```matlab
     data.Source = path
     data.ImageFileList = imageFileList
@@ -66,8 +67,7 @@
 
 
 
-
-# LLSM-image-processing
+## Original Code Notes (additional information)
  
 The main idea is the following: Due to the curvature of the tissue we interpolated the intensities (in the deskewed image volume) over the apical surface to get an image of the apical surface and then we shifted that surface down to interpolate the next z-layer and so on. These interpolated images give us what we can call a "flattened image volume."
 
