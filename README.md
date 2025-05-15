@@ -1,4 +1,73 @@
 # LLSM-image-processing
+
+## Light Sheet Decurving Flowchart
+![](Lightsheet_code_flowchart.png)
+
+## Main Process:
+
+1. Create image file list.
+    - Navigate in Matlab to the folder location where the movie images are stored. This will be used as the path in the MakeFileList function.
+    ```matlab
+    path = cd
+    [ListCh0,ListCh1] = MakeFileList_LS(path)
+    ```
+2. Store list and other data in a structure.
+    - Important data to save would be at a minimum the ImageFileList, Source, SecPerFrame. Other data can include start and end of GBE, pixel size in microns, processed movies, etc.
+    - Save the data structure in the Source folder.
+    ```matlab
+    data.Source = path
+    data.ImageFileList = imageFileList
+    data.SecPerFrame = 1
+    save('data','data')
+    ```
+4. Load first tiff stack (membrane channel).
+   - Save the first tiff volume as 'V', using the membrane channel for better edge detection.
+   ```matlab
+   V = tiffReadVolume('filename.tif')
+   ```
+9. Automatically get fitobject.
+   - Run the automatic fit finding function which will fit the curvature of the surface to a polynomial
+   ```matlab
+   [fitobject,Verts,X,Y,Z,Vinterp] = InterpStep2_autoGetFitObject(V)
+   ```
+   - Check the interpolated image afterwards to look for artifacts in the image. If there are artifacts in the top layers, you may need to increases the number of layers set to False in the subfunction 'findSurfaceVerts'.
+5. Get crop object.
+   - Give cropping parameters to remove the all black regions that don't contain tissue.
+   - The function will ask for the cropping values in this form: `[row min, row max, col min, col max, z min, z max]`
+   ```matlab
+   [crop_obj] = InterpStep3_getCropObject(Vinterp)
+   ```
+6. Run interpolation for all frames.
+   - Run the decurving for all time points. Inputs to the function are the the original file lists, the crop_obj and fitobject, as well as the time vector (given in frames, i.e. [1:20]), the savepath and readpath. The readpath should be the original deskewed image source, and the savepath should be a new folder (i.e. Processed_Images).
+   ```matlab
+   [NewImageListCh0,NewImageListCh1] = InterpStep4_2ChannelProcessAndWrite(ListCh0,ListCh1,crop_obj,fitobject,[1:20],cd,data.Source)
+   ```
+
+
+## Alternative Process:
+
+1. Get temporal max projection.
+   - Create a temporal maximum projection of the image data, producing a new image where each pixel's intensity represents the maximum intensity of that pixel across the entire time series.
+   - This step is most likely unnecessary, as it seeems that the embryo does not move during imaging. However, if this changes, then a max projection might be useful.
+   - The function inputs are the original membrane file list and the time vector (given in frames, i.e. [1:20]).
+   ```matlab
+   [V] = InterpStep1_maxImage(ListCh0,[1:20])
+   ```
+2. Manually get fitobject.
+   - Run the manual fit finding function, which provides a user interface for selecting points on the image, which are then used to fit a surface.
+   ```matlab
+   [fitobject,Verts,X,Y,Z,Vinterp] = InterpStep2_manualGetFitObject(V,[])
+   ```
+3. Run interpolation for all frames.
+   - Run the decurving for all time points. Inputs to the function are the the original file list, the crop_obj and fitobject, as well as the savepath. The savepath should be a new folder (i.e. Processed_Images).
+   ```matlab
+   [NewImageListCh0] = InterpStep4_1ChannelProcessAndWrite(ListCh0,crop_obj,fitobject,cd)
+   ```
+
+
+
+
+## Original Code Notes (additional information)
  
 The main idea is the following: Due to the curvature of the tissue we interpolated the intensities (in the deskewed image volume) over the apical surface to get an image of the apical surface and then we shifted that surface down to interpolate the next z-layer and so on. These interpolated images give us what we can call a "flattened image volume."
 
