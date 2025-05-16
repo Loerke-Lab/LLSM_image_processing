@@ -27,7 +27,7 @@ end
 
 
 % get the logical index of angles less than acceptable
-goodAngles = angle<5;
+goodAngles = angle<3;
 
 % get the first row and column and the last row and column
 cc = bwconncomp(goodAngles);
